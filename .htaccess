@@ -32,7 +32,7 @@ deny from all
 </Files>
 
 # Denies web access to your wp-config file, error_logs, php.ini, and htaccess/htpasswds
-<FilesMatch "^.*(error_log|wp-config\.php|php.ini|\.[hH][tT][aApP].*)$">
+<FilesMatch "^.*(error_log|wp-config|install|wp-login|xmlrpc\.php|php.ini|\.[hH][tT][aApP].*)$">
 Order deny,allow
 Deny from all
 </FilesMatch>
