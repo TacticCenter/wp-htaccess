@@ -69,8 +69,9 @@ RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
 RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
 RewriteRule ^(.*)$ index.php [F,L]
 
-# disable the server signature
+# START - Disable server signature #
 ServerSignature Off
+# END - Disable server signature #
 
 # Directo search engines to robots.txt
 < IfModule mod_rewrite.c >
@@ -91,6 +92,9 @@ RewriteRule (.*) http://your-site.com/favicon.ico [R=301,L]
 
 
 # Performance
+
+# pass the default character set
+AddDefaultCharset utf-8
 
 # Setup browser caching
 <IfModule mod_expires.c>
