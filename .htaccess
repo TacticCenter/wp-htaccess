@@ -137,6 +137,12 @@ Deny from 99.88 99.88.77 11.22.33
 
 # Performance
 
+# TN START ENABLE KEEP ALIVE
+<ifModule mod_headers.c>
+Header set Connection keep-alive
+</ifModule>
+# TN END ENABLE KEEP ALIVE
+
 # pass the default character set
 AddDefaultCharset utf-8
 
