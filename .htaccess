@@ -31,7 +31,7 @@ Allow from all
 deny from all
 </Files>
 
-# Deny access to important WP files.
+# Denies web access to your wp-config file, error_logs, php.ini, and htaccess/htpasswds
 <FilesMatch "^.*(error_log|wp-config\.php|php.ini|\.[hH][tT][aApP].*)$">
 Order deny,allow
 Deny from all
@@ -69,6 +69,25 @@ RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
 RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
 RewriteRule ^(.*)$ index.php [F,L]
 
+# disable the server signature
+ServerSignature Off
+
+# Directo search engines to robots.txt
+< IfModule mod_rewrite.c >
+RewriteBase /
+RewriteCond %{REQUEST_URI} !^/robots.txt$ [NC]
+RewriteCond %{REQUEST_URI} robots\.txt [NC]
+RewriteRule .* http://your-site.com/robots.txt [R=301,L]
+< /IfModule >
+
+# Eliminate favion crawling
+< IfModule mod_rewrite.c >
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_URI} /favicon?\.?(gif|ico|jpe?g?|png)?$ [NC]
+RewriteRule (.*) http://your-site.com/favicon.ico [R=301,L]
+< /IfModule >
+
 
 
 # Performance
@@ -88,11 +107,31 @@ ExpiresByType image/x-icon "access 1 year"
 ExpiresDefault "access 1 days"
 </IfModule>
 
+# Disable ETags
+Header unset ETag
+FileETag None
+
+# GZip compression
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css  application/x-javascript
+BrowserMatch ^Mozilla/4 gzip-only-text/html
+BrowserMatch ^Mozilla/4\.0[678] no-gzip
+BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+</IfModule>
+
+#Compress plain text files
+<FilesMatch "\.(js|css|html|htm|php|xml)$">
+SetOutputFilter DEFLATE
+</FilesMatch>
+
 # Increase file upload size.
 php_value upload_max_filesize 64M
 php_value post_max_size 64M
 php_value max_execution_time 300
 php_value max_input_time 300
+
+# limit file uploads to 10mb
+LimitRequestBody 10240000
 
 # Block WordPress xmlrpc.php requests
 <Files xmlrpc.php>
