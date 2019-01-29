@@ -1,5 +1,4 @@
 # Default .htaccess config for WP. Use this config in case you want to restore the original .htaccess
-
 # BEGIN WordPress
 <IfModule mod_rewrite.c>
 RewriteEngine On
@@ -8,6 +7,18 @@ RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+
+# Use it if you want to load Wordpress from its own subdirectory
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteBase /wordpress/
+	RewriteRule ^index\.php$ - [L]
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule . /wordpress/index.php [L]
 </IfModule>
 # END WordPress
 
@@ -89,6 +100,39 @@ RewriteCond %{REQUEST_URI} /favicon?\.?(gif|ico|jpe?g?|png)?$ [NC]
 RewriteRule (.*) http://your-site.com/favicon.ico [R=301,L]
 < /IfModule >
 
+# block IP range by address truncation
+<Limit GET POST PUT>
+	Order allow,deny
+	Allow from all
+	Deny from 99.88.77.66
+	Deny from 99.88.77.*
+	Deny from 99.88.*.*
+	Deny from 99.*.*.*
+</Limit>
+
+# allow IP range by address truncation
+<Limit GET POST PUT>
+	Order deny,allow
+	Deny from all
+	Allow from 99.88.77.66
+	Allow from 99.88.77.*
+	Allow from 99.88.*.*
+	Allow from 99.*.*.*
+</Limit>
+
+# Allow three ranges of IP addresses
+Allow from 99.88 99.88.77 11.22.33
+
+# Deny three ranges of IP addresses
+Deny from 99.88 99.88.77 11.22.33
+
+# stop hotlinking and serve alternate content
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteCond %{HTTP_REFERER} !^$
+	RewriteCond %{HTTP_REFERER} !^http://(www\.)?domain\.com/.*$ [NC]
+	RewriteRule .*\.(gif|jpg)$ http://www.domain.com/eatme.jpe [R,NC,L]
+</ifModule>
 
 
 # Performance
@@ -134,8 +178,8 @@ php_value post_max_size 64M
 php_value max_execution_time 300
 php_value max_input_time 300
 
-# limit file uploads to 10mb
-LimitRequestBody 10240000
+# limit file uploads to 1mb
+LimitRequestBody 1000000
 
 # Block WordPress xmlrpc.php requests
 <Files xmlrpc.php>
@@ -147,6 +191,34 @@ deny from all
 
 # Other
 
-#Set up 301 redirects.
-Redirect 301 /oldurl1/ https://www.yoursite.com/newurl1/
-Redirect 301 /oldurl2/ https://www.yoursite.com/newurl2/
+# redirect a specific file via 301
+Redirect 301 /current/currentfile.html http://www.newdomain.com/new/newfile.html
+
+# serve alternate default index page
+DirectoryIndex business.html
+
+# redirect all visitors to alternate site but retain full access for you
+ErrorDocument 403 http://www.alternate-site.com
+Order deny,allow
+Deny from all
+Allow from 99.88.77.66
+
+# permanently redirect from www domain to non-www domain
+RewriteEngine on
+Options +FollowSymLinks
+RewriteCond %{HTTP_HOST} ^www\.domain\.tld$ [NC]
+RewriteRule (.*) http://domain.tld/$1 [R=301,L]
+
+# redirect from old domain to new domain
+RewriteEngine On
+RewriteRule (.*) http://www.new-domain.com/$1 [R=301,L]
+
+# redirect an entire site via 301
+Redirect 301 / http://www.domain.com/
+
+# redirect an entire site via permanent redirect
+Redirect permanent / http://www.domain.com/
+
+# redirect a page or directory
+Redirect permanent old_file.html   http://www.new-domain.com/new_file.html
+Redirect permanent /old_directory/ http://www.new-domain.com/new_directory/
